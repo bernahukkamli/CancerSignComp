@@ -88,8 +88,11 @@ plot_kaplan_meier <- function(scored,
     xlab              = paste0("Time (", time_unit, ")"),
     ylab              = "Survival probability",
     pval              = p_label,
-    pval.coord        = c(0, 0.1),
-    risk.table.height = if (risk_table) 0.25 else 0,
+    pval.coord        = c(max(surv_time) * 0.6, 0.9),
+    risk.table.height = if (risk_table) 0.30 else 0,
+    risk.table.y.text = FALSE,   # etiket yerine renkli blok göster
+    risk.table.col    = "strata",
+    fontsize          = 3.5,
     ggtheme           = ggplot2::theme_bw(base_size = 12) +
       ggplot2::theme(
         plot.title      = ggplot2::element_text(hjust = 0.5, face = "bold"),
