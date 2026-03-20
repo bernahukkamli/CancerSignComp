@@ -12,3 +12,5 @@ Imports:
     stats,
     survival,
     utils
+URL: https://github.com/bernahukkamli/CancerSignComp
+BugReports: https://github.com/bernahukkamli/CancerSignComp/issues
