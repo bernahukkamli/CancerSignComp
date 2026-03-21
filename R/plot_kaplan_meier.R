@@ -13,16 +13,18 @@
 #' @export
 #'
 #' @examples
-#' set.seed(42)
-#' mat <- matrix(rnorm(500), nrow = 5,
-#'               dimnames = list(c("TP53","KRAS","MYC","CDKN2A","SMAD4"),
-#'                               paste0("Patient_", 1:100)))
-#' sig    <- load_signature(c("TP53","KRAS","MYC"), "TestSig", "PAAD")
-#' scored <- score_signature(sig, mat)
-#' surv_t <- rexp(100, rate = 0.05)
-#' surv_e <- rbinom(100, 1, 0.7)
-#' p <- plot_kaplan_meier(scored, surv_t, surv_e)
-#' print(p)
+#' \dontrun{
+#'   set.seed(42)
+#'   mat <- matrix(rnorm(500), nrow = 5,
+#'                 dimnames = list(c("TP53","KRAS","MYC","CDKN2A","SMAD4"),
+#'                                 paste0("Patient_", 1:100)))
+#'   sig    <- load_signature(c("TP53","KRAS","MYC"), "TestSig", "PAAD")
+#'   scored <- score_signature(sig, mat)
+#'   surv_t <- rexp(100, rate = 0.05)
+#'   surv_e <- rbinom(100, 1, 0.7)
+#'   p <- plot_kaplan_meier(scored, surv_t, surv_e)
+#'   print(p)
+#' }
 plot_kaplan_meier <- function(scored,
                               surv_time,
                               surv_event,
@@ -31,7 +33,6 @@ plot_kaplan_meier <- function(scored,
                               palette    = "jco",
                               risk_table = TRUE,
                               conf_int   = TRUE) {
-
   if (!inherits(scored, "ScoredSignature")) {
     stop("`scored` must be a ScoredSignature object from score_signature()")
   }
@@ -41,41 +42,33 @@ plot_kaplan_meier <- function(scored,
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop("Package 'ggplot2' is required.")
   }
-
   n <- scored$n_patients
   if (length(surv_time) != n) stop("`surv_time` length must equal n_patients")
   if (length(surv_event) != n) stop("`surv_event` length must equal n_patients")
-
   df_surv <- data.frame(
     surv_time  = surv_time,
     surv_event = surv_event,
     risk_group = scored$risk_group
   )
-
   km_fit <- survival::survfit(
     survival::Surv(surv_time, surv_event) ~ risk_group,
     data = df_surv
   )
-
   km_diff <- survival::survdiff(
     survival::Surv(surv_time, surv_event) ~ risk_group,
     data = df_surv
   )
-
   logrank_p <- 1 - pchisq(km_diff$chisq, df = 1)
-
   plot_title <- if (is.null(title)) {
     paste0(scored$signature_name, " (", scored$cancer_type, ")")
   } else {
     title
   }
-
   p_label <- if (logrank_p < 0.001) {
     "p < 0.001"
   } else {
     paste0("p = ", round(logrank_p, 3))
   }
-
   p <- survminer::ggsurvplot(
     fit               = km_fit,
     data              = df_surv,
@@ -90,7 +83,7 @@ plot_kaplan_meier <- function(scored,
     pval              = p_label,
     pval.coord        = c(max(surv_time) * 0.6, 0.9),
     risk.table.height = if (risk_table) 0.30 else 0,
-    risk.table.y.text = FALSE,   # etiket yerine renkli blok göster
+    risk.table.y.text = FALSE,
     risk.table.col    = "strata",
     fontsize          = 3.5,
     ggtheme           = ggplot2::theme_bw(base_size = 12) +
@@ -99,6 +92,5 @@ plot_kaplan_meier <- function(scored,
         legend.position = "top"
       )
   )
-
   return(p)
 }

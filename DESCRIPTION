@@ -1,18 +1,35 @@
 Package: CancerSignComp
-Title: What the Package Does (One Line, Title Case)
+Title: Benchmarking Cancer Prognostic Gene Signatures Against Each Other and Clinical Staging
 Version: 0.1.0
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+    person("Berna", "Hukkamli", , "berna.hukkamli@sinop.edu.tr", role = c("aut", "cre"),
+           comment = c(ORCID = ""))
+Description: Provides a standardized framework for evaluating and comparing cancer
+    prognostic gene signatures. Computes risk scores using weighted mean, GSVA, or
+    ssGSEA methods; benchmarks multiple signatures against each other via concordance
+    index (C-index); and compares signatures to TNM/AJCC clinical staging using
+    Net Reclassification Improvement (NRI) and Integrated Discrimination Improvement
+    (IDI). Includes Kaplan-Meier, C-index bar plot, and subgroup forest plot
+    visualizations, as well as CSV and Excel export utilities.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports: 
     ggplot2,
+    GSVA,
+    nricens,
+    openxlsx,
+    rlang,
     stats,
     survival,
     survminer,
     utils
 URL: https://github.com/bernahukkamli/CancerSignComp
 BugReports: https://github.com/bernahukkamli/CancerSignComp/issues
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+VignetteBuilder: knitr

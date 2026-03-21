@@ -28,8 +28,7 @@ Numeric values 1-4 are also accepted.}
 \code{"each"}: treat each stage separately}
 }
 \value{
-A list of class \code{StagingComparison} with C-index and
-log-rank results for both the signature and clinical staging
+A list of class \code{StagingComparison}
 }
 \description{
 Compare a gene signature against clinical staging (TNM/AJCC)

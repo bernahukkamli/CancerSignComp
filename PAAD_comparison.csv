@@ -1,0 +1,5 @@
+"signature","cancer_type","n_genes","coverage_pct","c_index","c_index_se","logrank_p","n_low","n_high"
+"Moffitt_2015","PAAD",10,100,0.6052,0.0304,0.0792,91,91
+"Hypoxia_Winter","PAAD",10,100,0.5995,0.032,0.0046,91,91
+"Bailey_2016","PAAD",10,100,0.5618,0.0313,0.271,91,91
+"Collisson_2011","PAAD",10,80,0.5016,0.0343,0.6728,91,91

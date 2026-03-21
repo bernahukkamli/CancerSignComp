@@ -4,29 +4,38 @@
 \alias{score_signature}
 \title{Score patients using a cancer prognostic gene signature}
 \usage{
-score_signature(signature, expr_matrix, weights = NULL, cutoff = "median")
+score_signature(
+  signature,
+  expr_matrix,
+  weights = NULL,
+  cutoff = "median",
+  method = "weighted_mean"
+)
 }
 \arguments{
 \item{signature}{A \code{CancerSignature} object from \code{load_signature()}}
 
 \item{expr_matrix}{A numeric matrix: rows = genes, columns = patients.
-Row names must be gene symbols (e.g., "TP53", "KRAS").}
+Row names must be gene symbols.}
 
 \item{weights}{Optional named numeric vector of gene weights.
-Names must match gene symbols. If NULL, equal weights are used.}
+Only used when \code{method = "weighted_mean"}.}
 
 \item{cutoff}{Method to split patients into risk groups:
 \code{"median"} (default), \code{"mean"}, or a numeric value (0-1 quantile).}
+
+\item{method}{Scoring method:
+\code{"weighted_mean"} (default): weighted mean of gene expression.
+\code{"gsva"}: GSVA enrichment score (requires GSVA package).
+\code{"ssgsea"}: single-sample GSEA score (requires GSVA package).}
 }
 \value{
-A list of class \code{ScoredSignature} containing risk scores
-and group assignments for each patient.
+A list of class \code{ScoredSignature}
 }
 \description{
 Score patients using a cancer prognostic gene signature
 }
 \examples{
-# Simulated expression matrix (100 patients, 5 genes)
 set.seed(42)
 mat <- matrix(rnorm(500), nrow = 5,
               dimnames = list(c("TP53","KRAS","MYC","CDKN2A","SMAD4"),

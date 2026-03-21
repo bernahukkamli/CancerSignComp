@@ -32,16 +32,18 @@ A \code{ggplot} object
 Plot C-index comparison across multiple signatures
 }
 \examples{
-set.seed(42)
-mat <- matrix(rnorm(1000), nrow = 10,
-              dimnames = list(
-                c("TP53","KRAS","MYC","CDKN2A","SMAD4",
-                  "EGFR","PTEN","RB1","BRCA2","PIK3CA"),
-                paste0("Patient_", 1:100)))
-sig1   <- load_signature(c("TP53","KRAS","MYC"),  "Sig_A", "PAAD")
-sig2   <- load_signature(c("EGFR","PTEN","RB1"),  "Sig_B", "PAAD")
-surv_t <- rexp(100, rate = 0.05)
-surv_e <- rbinom(100, 1, 0.7)
-comp   <- compare_signatures(list(sig1, sig2), mat, surv_t, surv_e)
-plot_comparison(comp)
+\dontrun{
+  set.seed(42)
+  mat <- matrix(rnorm(1000), nrow = 10,
+                dimnames = list(
+                  c("TP53","KRAS","MYC","CDKN2A","SMAD4",
+                    "EGFR","PTEN","RB1","BRCA2","PIK3CA"),
+                  paste0("Patient_", 1:100)))
+  sig1   <- load_signature(c("TP53","KRAS","MYC"),  "Sig_A", "PAAD")
+  sig2   <- load_signature(c("EGFR","PTEN","RB1"),  "Sig_B", "PAAD")
+  surv_t <- rexp(100, rate = 0.05)
+  surv_e <- rbinom(100, 1, 0.7)
+  comp   <- compare_signatures(list(sig1, sig2), mat, surv_t, surv_e)
+  plot_comparison(comp)
+}
 }

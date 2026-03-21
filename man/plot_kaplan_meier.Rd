@@ -39,14 +39,16 @@ A \code{ggsurvplot} object (printable and saveable)
 Plot Kaplan-Meier survival curves for a scored signature
 }
 \examples{
-set.seed(42)
-mat <- matrix(rnorm(500), nrow = 5,
-              dimnames = list(c("TP53","KRAS","MYC","CDKN2A","SMAD4"),
-                              paste0("Patient_", 1:100)))
-sig    <- load_signature(c("TP53","KRAS","MYC"), "TestSig", "PAAD")
-scored <- score_signature(sig, mat)
-surv_t <- rexp(100, rate = 0.05)
-surv_e <- rbinom(100, 1, 0.7)
-p <- plot_kaplan_meier(scored, surv_t, surv_e)
-print(p)
+\dontrun{
+  set.seed(42)
+  mat <- matrix(rnorm(500), nrow = 5,
+                dimnames = list(c("TP53","KRAS","MYC","CDKN2A","SMAD4"),
+                                paste0("Patient_", 1:100)))
+  sig    <- load_signature(c("TP53","KRAS","MYC"), "TestSig", "PAAD")
+  scored <- score_signature(sig, mat)
+  surv_t <- rexp(100, rate = 0.05)
+  surv_e <- rbinom(100, 1, 0.7)
+  p <- plot_kaplan_meier(scored, surv_t, surv_e)
+  print(p)
+}
 }

@@ -1,0 +1,2 @@
+"signature","cancer_type","n_patients","n_staged","sig_c_index","sig_c_index_se","sig_logrank_p","stage_c_index","stage_c_index_se","stage_logrank_p","c_index_diff","z_score","p_value_diff","verdict","nri","nri_p","idi","idi_p"
+"Moffitt_2015","PAAD",182,136,0.6052,0.0304,0.0792,0.5164,0.0253,0.9775,0.0888,2.242,0.025,"Signature significantly OUTPERFORMS clinical staging",NA,NA,NA,NA

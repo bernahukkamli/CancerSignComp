@@ -10,42 +10,41 @@
 #'
 #' @return A \code{ggplot} object
 #' @export
+#' @importFrom rlang .data
 #'
 #' @examples
-#' set.seed(42)
-#' mat <- matrix(rnorm(1000), nrow = 10,
-#'               dimnames = list(
-#'                 c("TP53","KRAS","MYC","CDKN2A","SMAD4",
-#'                   "EGFR","PTEN","RB1","BRCA2","PIK3CA"),
-#'                 paste0("Patient_", 1:100)))
-#' sig1   <- load_signature(c("TP53","KRAS","MYC"),  "Sig_A", "PAAD")
-#' sig2   <- load_signature(c("EGFR","PTEN","RB1"),  "Sig_B", "PAAD")
-#' surv_t <- rexp(100, rate = 0.05)
-#' surv_e <- rbinom(100, 1, 0.7)
-#' comp   <- compare_signatures(list(sig1, sig2), mat, surv_t, surv_e)
-#' plot_comparison(comp)
+#' \dontrun{
+#'   set.seed(42)
+#'   mat <- matrix(rnorm(1000), nrow = 10,
+#'                 dimnames = list(
+#'                   c("TP53","KRAS","MYC","CDKN2A","SMAD4",
+#'                     "EGFR","PTEN","RB1","BRCA2","PIK3CA"),
+#'                   paste0("Patient_", 1:100)))
+#'   sig1   <- load_signature(c("TP53","KRAS","MYC"),  "Sig_A", "PAAD")
+#'   sig2   <- load_signature(c("EGFR","PTEN","RB1"),  "Sig_B", "PAAD")
+#'   surv_t <- rexp(100, rate = 0.05)
+#'   surv_e <- rbinom(100, 1, 0.7)
+#'   comp   <- compare_signatures(list(sig1, sig2), mat, surv_t, surv_e)
+#'   plot_comparison(comp)
+#' }
 plot_comparison <- function(comparison,
                             show_se  = TRUE,
                             title    = NULL,
                             color    = "#2E86AB",
                             ref_line = 0.5) {
-
   # --- Girdi kontrolleri ---
   if (!inherits(comparison, "SignatureComparison")) {
     stop("`comparison` must be a SignatureComparison object from compare_signatures()")
   }
-
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop("Package 'ggplot2' is required. Install with: install.packages('ggplot2')")
   }
-
   df <- comparison$summary_table
 
   # Significance yıldızları ekle
   df$sig_label <- ifelse(df$logrank_p < 0.001, "***",
                          ifelse(df$logrank_p < 0.01,  "**",
                                 ifelse(df$logrank_p < 0.05,  "*", "ns")))
-
   df$label <- paste0(df$signature, "\n(n genes = ", df$n_genes, ")")
 
   # C-index'e göre sırala

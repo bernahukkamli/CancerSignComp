@@ -1,3 +1,11 @@
 ^CancerSignComp\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
+^GDCdata
+^MANIFEST\.txt$
+^PAAD_comparison\.csv$
+^PAAD_staging\.csv$
+^TCGA_PAAD_KM_plots\.pdf$
+^TCGA_PAAD_comparison\.pdf$
+^df\.rds$
+^results\.rds$
