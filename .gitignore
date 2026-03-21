@@ -4,3 +4,9 @@
 .httr-oauth
 .DS_Store
 .quarto
+PAAD_staging.csv
+TCGA_PAAD_KM_plots.pdf
+TCGA_PAAD_comparison.pdf
+df.rds
+results.rds
+GDCdata/
