@@ -1,0 +1,190 @@
+---
+title: "CancerSignComp: Benchmarking Cancer Prognostic Gene Signatures"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{CancerSignComp: Benchmarking Cancer Prognostic Gene Signatures}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+## Introduction
+
+Hundreds of prognostic gene signatures have been published for various cancer
+types, yet direct comparisons between signatures — or against standard clinical
+staging — are rarely performed in a standardized way. **CancerSignComp** fills
+this gap by providing a unified framework for:
+
+- Computing patient-level risk scores from gene expression matrices using
+  weighted mean, GSVA, or ssGSEA methods
+- Benchmarking multiple signatures against each other via concordance index
+  (C-index) and log-rank test
+- Comparing signatures to TNM/AJCC clinical staging using Net Reclassification
+  Improvement (NRI) and Integrated Discrimination Improvement (IDI)
+- Visualizing results with Kaplan-Meier curves, C-index bar plots, and subgroup
+  forest plots
+
+## Installation
+
+```{r installation, eval = FALSE}
+# Install from GitHub
+devtools::install_github("bernahukkamli/CancerSignComp")
+```
+
+```{r setup}
+library(CancerSignComp)
+```
+
+## Quick Start
+
+The complete workflow requires four steps: load a signature, score patients,
+compare signatures, and visualize results.
+
+```{r quickstart}
+set.seed(42)
+
+# 1. Simulate a gene expression matrix (genes x patients)
+mat <- matrix(
+  rnorm(1000), nrow = 10,
+  dimnames = list(
+    c("TP53", "KRAS", "MYC", "CDKN2A", "SMAD4",
+      "EGFR", "PTEN", "RB1", "BRCA2", "PIK3CA"),
+    paste0("Patient_", 1:100)
+  )
+)
+
+# 2. Simulate survival data
+surv_time  <- rexp(100, rate = 0.05)
+surv_event <- rbinom(100, 1, 0.7)
+
+# 3. Define two signatures
+sig1 <- load_signature(
+  genes       = c("TP53", "KRAS", "MYC"),
+  name        = "Signature_A",
+  cancer_type = "PAAD"
+)
+
+sig2 <- load_signature(
+  genes       = c("EGFR", "PTEN", "RB1"),
+  name        = "Signature_B",
+  cancer_type = "PAAD"
+)
+
+print(sig1)
+```
+
+```{r score}
+# 4. Score patients using weighted mean (default)
+scored1 <- score_signature(sig1, mat)
+scored2 <- score_signature(sig2, mat)
+
+print(scored1)
+```
+
+```{r compare}
+# 5. Compare signatures
+comp <- compare_signatures(list(sig1, sig2), mat, surv_time, surv_event)
+print(comp)
+```
+
+## Visualization
+
+### Kaplan-Meier Curves
+
+```{r km, fig.cap = "Kaplan-Meier survival curves stratified by risk group for Signature A."}
+p_km <- plot_kaplan_meier(scored1, surv_time, surv_event,
+                          title = "Signature A — Risk Stratification")
+print(p_km)
+```
+
+### C-index Comparison
+
+```{r cindex, fig.cap = "C-index comparison across signatures. Dashed red line indicates random classifier (C-index = 0.5)."}
+p_comp <- plot_comparison(comp,
+                          title = "Signature Comparison: C-index")
+print(p_comp)
+```
+
+### Subgroup Forest Plot
+
+```{r forest, fig.cap = "Forest plot showing hazard ratios across patient subgroups."}
+age_group <- sample(c("Young", "Old"), 100, replace = TRUE)
+
+p_forest <- plot_forest(
+  expr_matrix  = mat,
+  surv_time    = surv_time,
+  surv_event   = surv_event,
+  signature    = sig1,
+  subgroup_var = age_group,
+  title        = "Signature A — Subgroup Analysis"
+)
+print(p_forest)
+```
+
+## Comparison to Clinical Staging
+
+When TNM/AJCC stage information is available, `compare_to_staging()` tests
+whether a signature provides prognostic value beyond clinical staging alone,
+using NRI and IDI.
+
+```{r staging}
+# Simulate TNM stage (I–IV)
+stage <- sample(1:4, 100, replace = TRUE, prob = c(0.15, 0.35, 0.35, 0.15))
+staging_comp <- compare_to_staging(
+  scored     = scored1,
+  surv_time  = surv_time,
+  surv_event = surv_event,
+  stage      = stage
+)
+
+print(staging_comp)
+```
+
+## Scoring Methods
+
+`score_signature()` supports three methods via the `method` argument:
+
+| Method | Description | Best used when |
+|--------|-------------|----------------|
+| `"weighted_mean"` | Weighted average of gene expression | Signatures with known coefficients |
+| `"gsva"` | Gene Set Variation Analysis | Pathway-level signatures |
+| `"ssgsea"` | Single-sample GSEA | Large gene sets (≥ 15 genes) |
+
+```{r methods, eval = FALSE}
+# GSVA-based scoring
+scored_gsva <- score_signature(sig1, mat, method = "gsva")
+
+# ssGSEA-based scoring
+scored_ssgsea <- score_signature(sig1, mat, method = "ssgsea")
+```
+
+## Saving Results
+
+Results can be exported to CSV or Excel:
+
+```{r save, eval = FALSE}
+# Save to CSV
+save_results(comp, "signature_comparison.csv")
+
+# Save to Excel (requires openxlsx)
+save_results(comp, "signature_comparison.xlsx")
+
+# Save staging comparison
+save_results(staging_comp, "staging_comparison.csv")
+```
+
+## Session Info
+
+```{r sessioninfo}
+sessionInfo()
+```

@@ -39,3 +39,4 @@ test_that("save_results overwrites with overwrite = TRUE", {
 test_that("save_results errors on wrong extension", {
   expect_error(save_results(comp, "file.txt"), ".csv or .xlsx")
 })
+

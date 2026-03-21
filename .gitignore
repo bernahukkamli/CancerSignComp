@@ -10,3 +10,6 @@ TCGA_PAAD_comparison.pdf
 df.rds
 results.rds
 GDCdata/
+inst/doc
+/doc/
+/Meta/

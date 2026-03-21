@@ -9,3 +9,5 @@
 ^TCGA_PAAD_comparison\.pdf$
 ^df\.rds$
 ^results\.rds$
+^doc$
+^Meta$
