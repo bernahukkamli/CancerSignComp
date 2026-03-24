@@ -28,8 +28,11 @@ Imports:
 URL: https://github.com/bernahukkamli/CancerSignComp
 BugReports: https://github.com/bernahukkamli/CancerSignComp/issues
 Suggests: 
+    DESeq2,
     knitr,
+    preprocessCore,
     rmarkdown,
+    SummarizedExperiment,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 VignetteBuilder: knitr

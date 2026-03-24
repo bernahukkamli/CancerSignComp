@@ -11,3 +11,8 @@
 ^results\.rds$
 ^doc$
 ^Meta$
+^Cancersigncomp zhou2022 validation\.R$
+^LUAD_KM_Xia2023\.pdf$
+^LUAD_comparison\.pdf$
+^LUAD_literatur_imza\.R$
+^TGCA_LUAD_test\.R$

@@ -9,7 +9,8 @@ score_signature(
   expr_matrix,
   weights = NULL,
   cutoff = "median",
-  method = "weighted_mean"
+  method = "weighted_mean",
+  norm_method = "none"
 )
 }
 \arguments{
@@ -28,6 +29,14 @@ Only used when \code{method = "weighted_mean"}.}
 \code{"weighted_mean"} (default): weighted mean of gene expression.
 \code{"gsva"}: GSVA enrichment score (requires GSVA package).
 \code{"ssgsea"}: single-sample GSEA score (requires GSVA package).}
+
+\item{norm_method}{Normalization method to apply before scoring:
+\code{"none"} (default): no normalization applied.
+\code{"log2"}: log2(x + 1) transformation.
+\code{"zscore"}: gene-wise z-score standardization.
+\code{"quantile"}: quantile normalization (requires preprocessCore).
+\code{"vst"}: variance stabilizing transformation (requires DESeq2,
+input must be raw counts).}
 }
 \value{
 A list of class \code{ScoredSignature}
@@ -43,4 +52,8 @@ mat <- matrix(rnorm(500), nrow = 5,
 sig <- load_signature(c("TP53","KRAS","MYC"), "TestSig", "PAAD")
 scored <- score_signature(sig, mat)
 print(scored)
+
+# log2 normalizasyon ile
+scored_log2 <- score_signature(sig, mat, norm_method = "log2")
+print(scored_log2)
 }

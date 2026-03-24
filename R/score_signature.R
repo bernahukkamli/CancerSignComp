@@ -11,6 +11,13 @@
 #'   \code{"weighted_mean"} (default): weighted mean of gene expression.
 #'   \code{"gsva"}: GSVA enrichment score (requires GSVA package).
 #'   \code{"ssgsea"}: single-sample GSEA score (requires GSVA package).
+#' @param norm_method Normalization method to apply before scoring:
+#'   \code{"none"} (default): no normalization applied.
+#'   \code{"log2"}: log2(x + 1) transformation.
+#'   \code{"zscore"}: gene-wise z-score standardization.
+#'   \code{"quantile"}: quantile normalization (requires preprocessCore).
+#'   \code{"vst"}: variance stabilizing transformation (requires DESeq2,
+#'   input must be raw counts).
 #'
 #' @return A list of class \code{ScoredSignature}
 #' @export
@@ -23,11 +30,16 @@
 #' sig <- load_signature(c("TP53","KRAS","MYC"), "TestSig", "PAAD")
 #' scored <- score_signature(sig, mat)
 #' print(scored)
+#'
+#' # log2 normalizasyon ile
+#' scored_log2 <- score_signature(sig, mat, norm_method = "log2")
+#' print(scored_log2)
 score_signature <- function(signature,
                             expr_matrix,
-                            weights = NULL,
-                            cutoff  = "median",
-                            method  = "weighted_mean") {
+                            weights     = NULL,
+                            cutoff      = "median",
+                            method      = "weighted_mean",
+                            norm_method = "none") {
 
   # --- Girdi kontrolleri ---
   if (!inherits(signature, "CancerSignature")) {
@@ -50,7 +62,59 @@ score_signature <- function(signature,
     stop("`method` must be one of: 'weighted_mean', 'gsva', 'ssgsea'")
   }
 
-  # --- İmza genleri matriste var mı? ---
+  if (!norm_method %in% c("none", "log2", "zscore", "quantile", "vst")) {
+    stop("`norm_method` must be one of: 'none', 'log2', 'zscore', 'quantile', 'vst'")
+  }
+
+  # --- Normalizasyon uygula ---
+  expr_matrix <- switch(norm_method,
+
+                        "none" = expr_matrix,
+
+                        "log2" = {
+                          log2(expr_matrix + 1)
+                        },
+
+                        "zscore" = {
+                          m <- apply(expr_matrix, 1, mean)
+                          s <- apply(expr_matrix, 1, sd)
+                          s[s == 0] <- 1
+                          sweep(sweep(expr_matrix, 1, m, "-"), 1, s, "/")
+                        },
+
+                        "quantile" = {
+                          if (!requireNamespace("preprocessCore", quietly = TRUE)) {
+                            stop("Package 'preprocessCore' required for quantile normalization. ",
+                                 "Install with: BiocManager::install('preprocessCore')")
+                          }
+                          rn <- rownames(expr_matrix)
+                          cn <- colnames(expr_matrix)
+                          mat_q <- preprocessCore::normalize.quantiles(expr_matrix)
+                          rownames(mat_q) <- rn
+                          colnames(mat_q) <- cn
+                          mat_q
+                        },
+
+                        "vst" = {
+                          if (!requireNamespace("DESeq2", quietly = TRUE)) {
+                            stop("Package 'DESeq2' required for VST normalization. ",
+                                 "Install with: BiocManager::install('DESeq2')")
+                          }
+                          count_int <- round(expr_matrix)
+                          dds <- DESeq2::DESeqDataSetFromMatrix(
+                            countData = count_int,
+                            colData   = data.frame(
+                              row.names = colnames(count_int),
+                              condition = rep("sample", ncol(count_int))
+                            ),
+                            design = ~ 1
+                          )
+                          vst_out <- DESeq2::vst(dds, blind = TRUE)
+                          as.matrix(SummarizedExperiment::assay(vst_out))
+                        }
+  )
+
+  # --- Imza genleri matriste var mi? ---
   genes_found   <- intersect(signature$genes, rownames(expr_matrix))
   genes_missing <- setdiff(signature$genes, rownames(expr_matrix))
 
@@ -68,7 +132,6 @@ score_signature <- function(signature,
   # --- Risk skorunu hesapla ---
   risk_scores <- if (method == "weighted_mean") {
 
-    # Agirlikli ortalama
     if (is.null(weights)) {
       w <- rep(1, length(genes_found))
       names(w) <- genes_found
@@ -91,7 +154,6 @@ score_signature <- function(signature,
 
   } else {
 
-    # GSVA veya ssGSEA
     if (!requireNamespace("GSVA", quietly = TRUE)) {
       stop("Package 'GSVA' is required for method='", method, "'. ",
            "Install with: BiocManager::install('GSVA')")
@@ -142,7 +204,8 @@ score_signature <- function(signature,
     cutoff_method  = ifelse(is.numeric(cutoff),
                             paste0("quantile_", cutoff), cutoff),
     weights_used   = if (method == "weighted_mean") w else NULL,
-    method         = method
+    method         = method,
+    norm_method    = norm_method
   )
 
   class(result) <- "ScoredSignature"
@@ -160,6 +223,7 @@ print.ScoredSignature <- function(x, ...) {
   cat("  Signature   :", x$signature_name, "\n")
   cat("  Cancer type :", x$cancer_type, "\n")
   cat("  Method      :", x$method, "\n")
+  cat("  Norm        :", x$norm_method, "\n")
   cat("  Patients    :", x$n_patients, "\n")
   cat("  Genes used  :", length(x$genes_used),
       paste0("(", x$coverage_pct, "% coverage)"), "\n")
