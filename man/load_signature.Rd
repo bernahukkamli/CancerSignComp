@@ -4,28 +4,37 @@
 \alias{load_signature}
 \title{Load and validate a cancer prognostic gene signature}
 \usage{
-load_signature(genes, name, cancer_type, description = "")
+load_signature(
+  genes,
+  name,
+  cancer_type = NULL,
+  cancer = NULL,
+  description = "",
+  source = "",
+  weights = NULL
+)
 }
 \arguments{
-\item{genes}{Character vector of gene symbols (e.g., c("TP53", "BRCA1"))}
+\item{genes}{Character vector of gene symbols}
 
-\item{name}{A short name for this signature (e.g., "Smith2023_PAAD")}
+\item{name}{A short name for this signature}
 
-\item{cancer_type}{Cancer type abbreviation (e.g., "PAAD", "COAD", "KIRC")}
+\item{cancer_type}{Cancer type abbreviation (e.g., "PAAD")}
 
-\item{description}{Optional free-text description of the signature}
+\item{cancer}{Alias for cancer_type}
+
+\item{description}{Optional free-text description}
+
+\item{source}{Optional citation or reference}
+
+\item{weights}{Optional named numeric vector of gene weights}
 }
 \value{
-A list of class \code{CancerSignature} with validated gene symbols
+A list of class \code{CancerSignature}
 }
 \description{
 Load and validate a cancer prognostic gene signature
 }
 \examples{
-sig <- load_signature(
-  genes       = c("TP53", "KRAS", "CDKN2A"),
-  name        = "MySignature_2024",
-  cancer_type = "PAAD"
-)
-print(sig)
+sig <- load_signature(genes = c("TP53", "KRAS"), name = "Test", cancer_type = "PAAD")
 }

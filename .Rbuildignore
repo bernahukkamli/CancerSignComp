@@ -16,3 +16,7 @@
 ^LUAD_comparison\.pdf$
 ^LUAD_literatur_imza\.R$
 ^TGCA_LUAD_test\.R$
+^compare_normalization\.R$
+^master$
+^normalizasyon\.R$
+^Zhang_test\.R$

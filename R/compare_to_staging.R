@@ -40,6 +40,32 @@ compare_to_staging <- function(scored,
 
   n <- scored$n_patients
 
+  # --- Sample eslestirme (isimli vektorler icin) ---
+  patient_ids <- names(scored$risk_scores)
+
+  # surv_time eslestir
+  if (!is.null(names(surv_time))) {
+    common_t <- intersect(patient_ids, names(surv_time))
+    if (length(common_t) < 10) stop("Fewer than 10 common samples between scored and surv_time")
+    surv_time  <- surv_time[common_t]
+    surv_event <- if (!is.null(names(surv_event))) surv_event[common_t] else surv_event[seq_along(common_t)]
+    scored$risk_scores <- scored$risk_scores[common_t]
+    scored$risk_group  <- scored$risk_group[common_t]
+    n <- length(common_t)
+  }
+
+  # stage eslestir
+  if (!is.null(names(stage))) {
+    common_s <- intersect(names(scored$risk_scores), names(stage))
+    if (length(common_s) < 10) stop("Fewer than 10 common samples between scored and stage")
+    stage      <- stage[common_s]
+    surv_time  <- surv_time[common_s]
+    surv_event <- surv_event[common_s]
+    scored$risk_scores <- scored$risk_scores[common_s]
+    scored$risk_group  <- scored$risk_group[common_s]
+    n <- length(common_s)
+  }
+
   if (length(surv_time)  != n) stop("`surv_time` length must equal n_patients")
   if (length(surv_event) != n) stop("`surv_event` length must equal n_patients")
   if (!all(surv_event %in% c(0, 1))) stop("`surv_event` must contain only 0 and 1")

@@ -35,11 +35,24 @@ compare_signatures <- function(signatures,
     stop("`signatures` must be a list of at least 2 CancerSignature objects")
   }
 
-  not_sig <- !sapply(signatures, inherits, "CancerSignature")
-  if (any(not_sig)) {
-    stop("All elements of `signatures` must be CancerSignature objects. ",
-         "Problem at index: ", paste(which(not_sig), collapse = ", "))
-  }
+  # ScoredSignature verilmisse CancerSignature listesine donustur
+  signatures <- lapply(seq_along(signatures), function(i) {
+    s <- signatures[[i]]
+    if (inherits(s, "ScoredSignature")) {
+      # ScoredSignature icerisinden CancerSignature olustur
+      load_signature(
+        genes       = s$genes_used,
+        name        = s$signature_name,
+        cancer_type = s$cancer_type
+      )
+    } else if (inherits(s, "CancerSignature")) {
+      s
+    } else {
+      stop("Element ", i, " must be a CancerSignature or ScoredSignature object.\n",
+           "  Got: ", class(s)[1], "\n",
+           "  Use load_signature() to create a CancerSignature object.")
+    }
+  })
 
   n_patients <- ncol(expr_matrix)
 
