@@ -1,0 +1,3 @@
+[download]
+retry_amount = 6
+dir =GDCdata/TCGA-BRCA/Transcriptome_Profiling/Gene_Expression_Quantification
