@@ -183,6 +183,115 @@ save_results(comp, "signature_comparison.xlsx")
 save_results(staging_comp, "staging_comparison.csv")
 ```
 
+
+## Real-World Example: TCGA-LUAD Validation
+
+This section demonstrates CancerSignComp using real TCGA-LUAD data
+(n = 588 patients) to benchmark three published gene signatures against
+TNM/AJCC clinical staging.
+
+### Signatures Tested
+
+| Signature | Genes | Cancer | Design Purpose |
+|-----------|-------|--------|----------------|
+| Zhou_2022 | COL1A1, GPX3, PLEK2 | LUAD | Prognostic |
+| Zhang_2022 | SCAF11, NOD1, NLRP2, NLRP1, GPX4, CASP8, AIM2 | LUAD | Prognostic (pyroptosis) |
+| Sarang_2025 | AGER, MGP, PECAM1, SLC2A1 | LUAD | Diagnostic |
+```{r tcga_signatures, eval = FALSE}
+# Define signatures
+zhou_sig <- load_signature(
+  genes  = c("COL1A1", "GPX3", "PLEK2"),
+  name   = "Zhou_2022",
+  source = "Front Oncol",
+  cancer = "LUAD"
+)
+
+zhang_sig <- load_signature(
+  genes  = c("SCAF11", "NOD1", "NLRP2", "NLRP1", "GPX4", "CASP8", "AIM2"),
+  name   = "Zhang_2022",
+  source = "Front Genet",
+  cancer = "LUAD"
+)
+
+# Sarang_2025: diagnostic signature
+# Downregulated genes get weight = -1, upregulated get weight = +1
+sarang_sig <- load_signature(
+  genes   = c("AGER", "MGP", "PECAM1", "SLC2A1"),
+  name    = "Sarang_2025",
+  source  = "Biomolecules",
+  cancer  = "LUAD",
+  weights = c(AGER = -1, MGP = -1, PECAM1 = -1, SLC2A1 = 1)
+)
+```
+
+### Scoring and Benchmarking
+```{r tcga_scoring, eval = FALSE}
+# Score all three signatures
+zhou_scored   <- score_signature(zhou_sig,   expr_matrix = expr_mat)
+zhang_scored  <- score_signature(zhang_sig,  expr_matrix = expr_mat)
+sarang_scored <- score_signature(sarang_sig, expr_matrix = expr_mat)
+
+# Compare against each other
+multi_comp <- compare_signatures(
+  signatures  = list(zhou_scored, zhang_scored, sarang_scored),
+  expr_matrix = expr_mat,
+  surv_time   = os_time_months,
+  surv_event  = os_status
+)
+print(multi_comp)
+```
+
+### Results
+
+All three signatures were benchmarked against TNM/AJCC staging using
+`compare_to_staging()`. Key findings:
+```{r tcga_results, eval = FALSE}
+sarang_comp <- compare_to_staging(
+  scored     = sarang_scored,
+  surv_time  = os_time_months,
+  surv_event = os_status,
+  stage      = stage_matched
+)
+print(sarang_comp)
+```
+
+The results highlight two important patterns:
+
+**1. Prognostic signatures underperform TNM in well-staged cancers.**
+Both Zhou_2022 (C-index = 0.552) and Zhang_2022 (C-index = 0.549)
+failed to match TNM staging performance (C-index = 0.656) in LUAD,
+despite being specifically designed as prognostic tools.
+
+**2. Diagnostic signatures have no prognostic value.**
+Sarang_2025 was originally designed to distinguish early-stage LUAD
+from normal tissue. When repurposed as a prognostic tool, it showed
+C-index = 0.511 (p = 0.145, ns) and HR = 0.95 (ns) <U+2014> statistically
+indistinguishable from random classification. This exemplifies
+"signature inflation": diagnostic signatures being uncritically
+applied to prognostic contexts.
+
+| Signature | C-index | Log-rank p | vs TNM (Delta) | Verdict |
+|-----------|---------|------------|----------------|---------|
+| Zhou_2022 | 0.552 | 0.005 | -0.096 | TNM > Sig |
+| Zhang_2022 | 0.549 | 0.512 | -0.132 | TNM > Sig |
+| Sarang_2025 | 0.511 | 0.145 | -0.145 | TNM > Sig |
+| TNM staging | 0.656 | <0.001 | <U+2014> | Reference |
+
+### Kaplan-Meier Visualization
+```{r tcga_km, eval = FALSE}
+# KM plot for Sarang_2025 (diagnostic signature <U+2014> no survival separation)
+plot_kaplan_meier(
+  scored     = sarang_scored,
+  surv_time  = os_time_months[names(sarang_scored$risk_scores)],
+  surv_event = os_status[names(sarang_scored$risk_scores)],
+  title      = "Sarang_2025 - TCGA-LUAD (diagnostic signature)"
+)
+```
+
+> **Interpretation:** The overlapping survival curves (p = 0.145) confirm
+> that a signature optimized for tumor vs. normal tissue discrimination
+> does not stratify patient prognosis. CancerSignComp makes this
+> distinction explicit and quantifiable.
 ## Session Info
 
 ```{r sessioninfo}

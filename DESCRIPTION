@@ -28,7 +28,9 @@ Imports:
 URL: https://github.com/bernahukkamli/CancerSignComp
 BugReports: https://github.com/bernahukkamli/CancerSignComp/issues
 Suggests: 
+    Biobase,
     DESeq2,
+    GEOquery,
     knitr,
     preprocessCore,
     rmarkdown,
