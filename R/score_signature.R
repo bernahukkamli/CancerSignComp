@@ -58,8 +58,8 @@ score_signature <- function(signature,
     stop("`expr_matrix` must have column names (patient IDs)")
   }
 
-  if (!method %in% c("weighted_mean", "gsva", "ssgsea")) {
-    stop("`method` must be one of: 'weighted_mean', 'gsva', 'ssgsea'")
+  if (!method %in% c("weighted_mean", "weighted_sum", "gsva", "ssgsea")) {
+    stop("`method` must be one of: 'weighted_mean', 'weighted_sum', 'gsva', 'ssgsea'")
   }
 
   if (!norm_method %in% c("none", "log2", "zscore", "quantile", "vst")) {
@@ -133,6 +133,11 @@ score_signature <- function(signature,
   risk_scores <- if (method == "weighted_mean") {
 
     if (is.null(weights)) {
+      if (!is.null(signature$weights)) {
+        weights <- signature$weights
+      }
+    }
+    if (is.null(weights)) {
       w <- rep(1, length(genes_found))
       names(w) <- genes_found
     } else {
@@ -152,6 +157,31 @@ score_signature <- function(signature,
       weighted.mean(patient_expr, w = w)
     })
 
+
+  } else if (method == "weighted_sum") {
+
+    if (is.null(weights)) {
+      if (!is.null(signature$weights)) {
+        weights <- signature$weights
+      }
+    }
+    if (is.null(weights)) {
+      w <- rep(1, length(genes_found))
+      names(w) <- genes_found
+    } else {
+      if (!is.numeric(weights) || is.null(names(weights))) {
+        stop("`weights` must be a named numeric vector")
+      }
+      w <- weights[genes_found]
+      if (any(is.na(w))) {
+        missing_w <- genes_found[is.na(w)]
+        warning("No weight for: ", paste(missing_w, collapse = ", "),
+                ". Using weight = 1.")
+        w[is.na(w)] <- 1
+      }
+    }
+    sub_matrix <- expr_matrix[genes_found, , drop = FALSE]
+    colSums(sub_matrix * w[rownames(sub_matrix)])
   } else {
 
     if (!requireNamespace("GSVA", quietly = TRUE)) {
@@ -203,7 +233,7 @@ score_signature <- function(signature,
     threshold      = threshold,
     cutoff_method  = ifelse(is.numeric(cutoff),
                             paste0("quantile_", cutoff), cutoff),
-    weights_used   = if (method == "weighted_mean") w else NULL,
+    weights_used   = if (method %in% c("weighted_mean", "weighted_sum")) w else NULL,
     method         = method,
     norm_method    = norm_method
   )
